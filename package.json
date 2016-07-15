@@ -1,0 +1,12 @@
+{
+  "name": "export-safari-reading-list",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fs-extra": "^0.30.0",
+    "simple-plist": "^0.1.4"
+  }
+}
