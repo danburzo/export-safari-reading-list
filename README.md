@@ -8,7 +8,7 @@ I want to archive the things I find while browsing on my phone (which I save wit
 
 ## Usage
 
-```bash
+```shell
 ~$ cd export-safari-reading-list
 export-safari-reading-list$ npm install
 export-safari-reading-list$ node index.js
