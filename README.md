@@ -8,5 +8,10 @@ I want to archive the things I find while browsing on my phone (which I save wit
 
 ## Usage
 
-Clone this repository, switch to the project folder and run `node index.js`. This will create a `bookmarks.html` file in the `dist/` folder. 
+```bash
+~$ cd export-safari-reading-list
+export-safari-reading-list$ npm install
+export-safari-reading-list$ node index.js
+```
 
+You'll find the generated `bookmarks.html` file in the `dist/` folder.
