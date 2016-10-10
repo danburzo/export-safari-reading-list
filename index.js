@@ -2,11 +2,32 @@ var plist = require('simple-plist');
 var fs = require('fs-extra');
 var path = require('path');
 
-// This is where Safari keeps its bookmark file
-var READING_LIST_FILE = path.join(process.env.HOME, '/Library/Safari/Bookmarks.plist');
+// This is where Safari keeps its bookmark file on a Mac
+const READING_LIST_FILE = path.join(process.env.HOME, '/Library/Safari/Bookmarks.plist');
+
+// This is where we'll output the bookmarks
+const OUTPUT_FILE = path.join('dist', 'bookmarks.html');
+
+/* 
+	Process the reading list PLIST file and output
+	a Netscape-formatted HTML file.
+*/
+
+plist.readFile(READING_LIST_FILE, function(err, plist_data) {
+	if (err) { throw err; }
+	var bookmarks = find_bookmarks(plist_data)
+		.map(parse_bookmark)
+		.map(bookmark_to_html)
+		.join('\n');
+	fs.outputFile(OUTPUT_FILE, netscape_template(bookmarks));
+});
+
+/*
+	Helper functions used in processing the bookmarks.
+*/
 
 // Narrow down to the Reading List items from Safari's bookmarks file
-function getReadingList(data) {
+function find_bookmarks(data) {
 	var reading_list = data.Children.find(function(item) {
 		return item.Title === 'com.apple.ReadingList';
 	});
@@ -14,7 +35,7 @@ function getReadingList(data) {
 };
 
 // For each item in the Reading List, extract data into a saner JSON structure. 
-function parseBookmark(bookmark) {
+function parse_bookmark(bookmark) {
 	return {
 		href: bookmark.URLString,
 		title: bookmark.ReadingListNonSync.Title || bookmark.URIDictionary.title,
@@ -24,13 +45,14 @@ function parseBookmark(bookmark) {
 };
 
 // Format the JSON object for the bookmark item into a HTML fragment
-function item_formatter(item) {
+function bookmark_to_html(item) {
 
-	// transform the standard timestamp to `seconds-from-1970` timestamp used in Netscape format
-	var timestamp = (new Date(item.time).getTime() + '').replace(/\d{3}$/, '');
+	// Transform the Javascript timestamp (in milliseconds from Jan 1, 1970) to the 
+	// Epoch time (in seconds from Jan 1, 1970) used in Netscape format
+	var timestamp = Math.round(new Date(item.time).getTime() / 1000);
 
-	// sanitize the HTML description so it does not break the markup (further)
-	var description = sanitize(item.description);
+	// Sanitize the HTML description so it does not break the markup (further)
+	var description = sanitize_html(item.description);
 
 	return `<DT><A HREF="${item.href}" ADD_DATE="${timestamp}">${item.title}</A>
 		<DD>${description}
@@ -51,8 +73,9 @@ ${content}
 </DL><p>`;
 };
 
-// Generic method to sanitize a HTML string
-function sanitize(str) {
+// A generic method to sanitize a HTML string, to make sure we don't break the markup 
+// any further than it already is in the Netscape Bookmark File Format.
+function sanitize_html(str) {
 	return (str + "")
 		.replace(/&/g,"&amp;")
 		.replace(/</g,"&lt;")
@@ -60,10 +83,3 @@ function sanitize(str) {
 		.replace(/"/g,"&quot;")
 		.replace(/'/g,"&#x27;")
 };
-
-var plist_data = plist.readFileSync(READING_LIST_FILE);
-var reading_list = getReadingList(plist_data);
-var bookmarks = reading_list.map(parseBookmark);
-var html_bookmarks = bookmarks.map(item_formatter).join('\n');
-
-fs.outputFile(path.join('dist', 'bookmarks.html'), netscape_template(html_bookmarks));
