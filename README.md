@@ -1,5 +1,7 @@
 # Export Safari Reading List
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/danburzo/export-safari-reading-list.svg)](https://greenkeeper.io/)
+
 This is a small script that exports bookmarks from Safari's Reading List to the (rather bizarre) [Netscape Bookmark File Format](http://fileformats.archiveteam.org/wiki/Netscape_bookmarks) which you can import into bookmarking sites such as [Pinboard](https://pinboard.in). 
 
 ## Why.
